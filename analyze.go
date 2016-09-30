@@ -2,12 +2,21 @@ package struct2elasticMapping
 
 import (
 	"reflect"
+	"strings"
 )
 
 // Analyze converts the supplied interface to a Mapping object.
-func Analyze(i interface{}) (name string, mapping *Mapping, err error) {
+// `nameFromStructTag` can be used to retrieve the name of
+// struct members from a tag - e.g. in the following snippet
+// 	type t struct {
+//		F1 string `json:"fieldName1,omitempty"`
+// 	}
+// 	Analyze(t{}, "json")
+// The function would use "fieldName1" as the name for the
+// member "F1". If no Tag is present the members name is used.
+func Analyze(i interface{}, nameFromStructTag string) (name string, mapping *Mapping, err error) {
 	t := reflect.TypeOf(i)
-	_, p, err := analyzeType(t, make(map[string]bool))
+	_, p, err := analyzeType(t, nameFromStructTag, make(map[string]bool))
 	if err != nil {
 		return
 	}
@@ -21,14 +30,14 @@ func Analyze(i interface{}) (name string, mapping *Mapping, err error) {
 // analyzeType converts the type from Go to ElasticSearch. If a
 // struct is found it recursively tries to determine convert everything
 // to a ES 'object'.
-func analyzeType(t reflect.Type, wt map[string]bool) (name string, p *Property, err error) {
+func analyzeType(t reflect.Type, nameFromStructTag string, wt map[string]bool) (name string, p *Property, err error) {
 	name = t.Name()
 	p = &Property{}
 	switch t.Kind() {
 	case reflect.Array,
 		reflect.Map,
 		reflect.Slice:
-		return analyzeType(t.Elem(), wt)
+		return analyzeType(t.Elem(), nameFromStructTag, wt)
 
 	case reflect.Struct:
 		p.Type = FieldTypeObject
@@ -42,11 +51,18 @@ func analyzeType(t reflect.Type, wt map[string]bool) (name string, p *Property, 
 			// Do sth. with the field
 			f := t.Field(i)
 			var sub *Property
-			_, sub, err = analyzeType(f.Type, wt)
+			_, sub, err = analyzeType(f.Type, nameFromStructTag, wt)
 			if err != nil {
 				return
 			}
-			p.Properties[f.Name] = *sub
+			fName := f.Name
+			if len(nameFromStructTag) > 0 {
+				structTag := strings.Split(f.Tag.Get(nameFromStructTag), ",")[0]
+				if len(structTag) > 0 {
+					fName = structTag
+				}
+			}
+			p.Properties[fName] = *sub
 		}
 
 	case reflect.Bool:

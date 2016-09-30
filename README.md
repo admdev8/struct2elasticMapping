@@ -26,7 +26,7 @@ defined by the go-nmap package.
 	)
 
 	func main() {
-		name, mapping, err := s2m.Analyze(nmap.NmapRun{})
+		name, mapping, err := s2m.Analyze(nmap.NmapRun{}, "json")
 		if err != nil {
 			panic(err.Error())
 		}
