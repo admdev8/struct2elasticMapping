@@ -26,7 +26,7 @@ testing.
 	import (
 		"fmt"
 
-		//nmap "github.com/lair-framework/go-nmap"
+		nmap "github.com/lair-framework/go-nmap"
 
 		s2m "github.com/marpie/struct2elasticMapping"
 	)
@@ -39,8 +39,8 @@ testing.
 	}
 
 	func main() {
-		//name, mapping, err := s2m.Analyze(nmap.NmapRun{}, "json")
-		name, mapping, err := s2m.Analyze(TestStruct{}, "json")
+		name, mapping, err := s2m.Analyze(nmap.NmapRun{}, "json")
+		//name, mapping, err := s2m.Analyze(TestStruct{}, "json")
 		if err != nil {
 			panic(err.Error())
 		}
