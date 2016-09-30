@@ -62,6 +62,17 @@ func analyzeType(t reflect.Type, nameFromStructTag string, wt map[string]bool) (
 					fName = structTag
 				}
 			}
+			// Parse `elastic` tag if present
+			parts := strings.Split(f.Tag.Get("elastic"), ",")
+			if len(parts[0]) > 0 {
+				sub.Type = FieldType(parts[0])
+			}
+			if len(parts) > 1 {
+				sub.Analyzer = AnalyzerType(parts[1])
+			}
+			if len(parts) > 2 {
+				sub.Index = IndexType(parts[2])
+			}
 			p.Properties[fName] = *sub
 		}
 

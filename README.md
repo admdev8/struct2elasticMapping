@@ -20,13 +20,21 @@ defined by the go-nmap package.
 	import (
 		"fmt"
 
-		nmap "github.com/lair-framework/go-nmap"
+		//nmap "github.com/lair-framework/go-nmap"
 
 		s2m "github.com/marpie/struct2elasticMapping"
 	)
 
+	// Format: "Type,Analyzer,Index"
+	type TestStruct struct {
+		Field1  int64  `json:"title,omitempty" elastic:"date,standard,analyzed"`
+		Subject string `json:"subject" elastic:",whitespace,not_analyzed"`
+		Body    string `json:"body" elastic:",german"`
+	}
+
 	func main() {
-		name, mapping, err := s2m.Analyze(nmap.NmapRun{}, "json")
+		//name, mapping, err := s2m.Analyze(nmap.NmapRun{}, "json")
+		name, mapping, err := s2m.Analyze(TestStruct{}, "json")
 		if err != nil {
 			panic(err.Error())
 		}
@@ -36,3 +44,4 @@ defined by the go-nmap package.
 		}
 		fmt.Println(string(s))
 	}
+
